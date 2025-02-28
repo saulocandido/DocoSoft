@@ -1,0 +1,80 @@
+# Visual Studio and .NET build files
+.vs/
+bin/
+obj/
+out/
+*.exe
+*.dll
+*.pdb
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+*.log
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider & JetBrains IDEs
+.idea/
+*.sln.iml
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+*.nunit.xml
+
+# Build Artifacts
+dist/
+publish/
+
+# Package files
+*.nupkg
+*.snupkg
+project.lock.json
+project.assets.json
+packages/
+!packages/*.md
+.nuget/
+
+# Code Coverage
+*.coverage
+*.coveragexml
+.coverage/
+.vscode-test/
+
+# Dependency Cache
+node_modules/
+packages/
+
+# Docker
+**/[Dd]ockerfile*
+**/docker-compose*.yml
+.dockerignore
+
+# Environment files
+.env
+.env.*
+
+# Local tool settings
+.toolsettings/
+global.json
+
+# Logs and debug files
+*.log
+*.tlog
+*.cache
+*.csproj.user
+
+# Resharper and Rider
+_ReSharper*/
+*.DotSettings.user
+
+# Git ignore overrides
+!README.md
+!.gitignore
