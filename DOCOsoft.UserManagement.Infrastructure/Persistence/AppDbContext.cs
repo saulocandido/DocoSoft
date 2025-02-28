@@ -14,7 +14,7 @@ namespace DOCOsoft.UserManagement.Infrastructure.Persistence
         {
             base.OnModelCreating(modelBuilder);
 
-            // ✅ Explicitly configure `User` without seeding it
+            // Explicitly configuring user without seeding it jsut for date seed
             modelBuilder.Entity<User>()
                 .OwnsOne(u => u.Email, email =>
                 {
@@ -38,13 +38,13 @@ namespace DOCOsoft.UserManagement.Infrastructure.Persistence
                         .HasMaxLength(50);
                 });
 
-            // ✅ Configure Many-to-Many Relationship
+            // Configuring Many-to-Many Relationship with Role domain 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Roles)
                 .WithMany(r => r.Users)
                 .UsingEntity(j => j.ToTable("UserRoles"));
 
-            // ✅ Seed Only Roles (Hardcoded IDs)
+            // Seed Only Roles Hardcoded ID here for better demo 
             var adminRoleId = new Guid("11111111-1111-1111-1111-111111111111");
             var userRoleId = new Guid("22222222-2222-2222-2222-222222222222");
 
