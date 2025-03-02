@@ -1,14 +1,19 @@
-﻿
-using DOCOsoft.UserManagement.Application.Users.Commands.CreateUser;
+﻿using DOCOsoft.UserManagement.Application.Users.Commands.CreateUser;
+using DOCOsoft.UserManagement.Application.Users.Dtos;
+using DOCOsoft.UserManagement.Domain.Entities;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
+using DOCOsoft.UserManagement.Domain.Interfaces;
+using DOCOsoft.UserManagement.Domain.Services;
+using DOCOsoft.UserManagement.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-
-using DomainUser = DOCOsoft.UserManagement.Domain.Entities.User;
-using DomainRole = DOCOsoft.UserManagement.Domain.Entities.Role;
-using DOCOsoft.UserManagement.Application.Interfaces;
-using DOCOsoft.UserManagement.Domain.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using DOCOsoft.UserManagement.Domain.Common;
 
 namespace DOCOsoft.UserManagement.Test.Application.UserTest
 {
@@ -18,6 +23,7 @@ namespace DOCOsoft.UserManagement.Test.Application.UserTest
         private readonly Mock<IRoleRepository> _mockRoleRepo;
         private readonly Mock<IUserUniquenessChecker> _mockUniquenessChecker;
         private readonly Mock<ILogger<CreateUserHandler>> _mockLogger;
+        private readonly UserDomainService _userDomainService;
         private readonly CreateUserHandler _handler;
 
         public CreateUserHandlerTests()
@@ -27,10 +33,13 @@ namespace DOCOsoft.UserManagement.Test.Application.UserTest
             _mockUniquenessChecker = new Mock<IUserUniquenessChecker>();
             _mockLogger = new Mock<ILogger<CreateUserHandler>>();
 
+            // Initialize UserDomainService with the mock uniqueness checker
+            _userDomainService = new UserDomainService(_mockUniquenessChecker.Object);
+
             _handler = new CreateUserHandler(
                 _mockUserRepo.Object,
                 _mockRoleRepo.Object,
-                _mockUniquenessChecker.Object,
+                _userDomainService,
                 _mockLogger.Object);
         }
 
@@ -48,16 +57,17 @@ namespace DOCOsoft.UserManagement.Test.Application.UserTest
 
             var email = new Email(command.Email);
             var fullName = new FullName(command.FirstName, command.LastName);
+            var role = new Role(roleId, "Admin");
+            var roles = new List<Role> { role };
 
-            var role = new DomainRole(roleId, "Admin");
-            var roles = new List<DomainRole> { role };
-
-            _mockUniquenessChecker.Setup(x => x.IsUserEmailUnique(email)).Returns(true);
+            _mockUniquenessChecker.Setup(x => x.IsUserEmailUnique(It.IsAny<Email>())).Returns(true);
             _mockRoleRepo.Setup(x => x.GetAllAsync()).ReturnsAsync(roles);
-            _mockUserRepo.Setup(x => x.AddAsync(It.IsAny<DomainUser>())).Returns(Task.CompletedTask);
+            _mockUserRepo.Setup(x => x.AddAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
 
+            // Act
             var result = await _handler.Handle(command, CancellationToken.None);
 
+            // Assert
             Assert.True(result.IsSuccess);
             Assert.Equal(command.Email, result.Data.Email);
             Assert.Equal(command.FirstName, result.Data.FirstName);
@@ -69,6 +79,7 @@ namespace DOCOsoft.UserManagement.Test.Application.UserTest
         [Fact]
         public async Task Handle_ShouldReturnFailure_WhenEmailIsAlreadyInUse()
         {
+            // Arrange
             var command = new CreateUserCommand(
                 "Jane",
                 "Doe",
@@ -78,18 +89,19 @@ namespace DOCOsoft.UserManagement.Test.Application.UserTest
 
             var email = new Email(command.Email);
 
-            _mockRoleRepo.Setup(x => x.GetAllAsync()).ReturnsAsync(new List<DomainRole>());
-            _mockUniquenessChecker.Setup(x => x.IsUserEmailUnique(email)).Returns(false);
+            _mockUniquenessChecker.Setup(x => x.IsUserEmailUnique(It.IsAny<Email>())).Returns(false);
+            _mockRoleRepo.Setup(x => x.GetAllAsync()).ReturnsAsync(new List<Role>());
 
-            var result = await _handler.Handle(command, CancellationToken.None);
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                _handler.Handle(command, CancellationToken.None));
 
-            Assert.False(result.IsSuccess);
-            Assert.Equal("Email is already in use.", result.Errors.FirstOrDefault());
-            _mockUserRepo.Verify(x => x.AddAsync(It.IsAny<DomainUser>()), Times.Never);
+            Assert.Equal("Email is already in use.", exception.Message);
         }
 
+
         [Fact]
-        public async Task Handle_ShouldReturnFailure_WhenRepositoryThrowsException()
+        public async Task Handle_ShouldThrowException_WhenRepositoryThrowsException()
         {
             // Arrange
             var roleId = Guid.NewGuid();
@@ -102,13 +114,12 @@ namespace DOCOsoft.UserManagement.Test.Application.UserTest
 
             var email = new Email(command.Email);
             var fullName = new FullName(command.FirstName, command.LastName);
-            var role = new DomainRole(roleId, "User");
-            var roles = new List<DomainRole> { role };
+            var role = new Role(roleId, "User");
+            var roles = new List<Role> { role };
 
-            _mockUniquenessChecker.Setup(x => x.IsUserEmailUnique(email)).Returns(true);
+            _mockUniquenessChecker.Setup(x => x.IsUserEmailUnique(It.IsAny<Email>())).Returns(true);
             _mockRoleRepo.Setup(x => x.GetAllAsync()).ReturnsAsync(roles);
-            // Simulate an exception in AddAsync
-            _mockUserRepo.Setup(x => x.AddAsync(It.IsAny<DomainUser>()))
+            _mockUserRepo.Setup(x => x.AddAsync(It.IsAny<User>()))
                 .ThrowsAsync(new Exception("Database error"));
 
             // Act & Assert
@@ -117,12 +128,16 @@ namespace DOCOsoft.UserManagement.Test.Application.UserTest
         }
 
         [Fact]
-        public void CreateUserCommand_InvalidEmail_ShouldThrowArgumentException()
+        public void CreateUserCommand_InvalidEmail_ShouldThrowDomainValidationException()
         {
-            Assert.Throws<ArgumentException>(() =>
+            // Act & Assert
+            var exception = Assert.Throws<DomainValidationException>(() =>
             {
-                var _ = new Email("invalidemail.com");
+                var _ = new Email("invalidemail.com"); // Missing '@' should trigger validation
             });
+
+            Assert.Equal("Email must contain '@' symbol.", exception.Message);
         }
+
     }
 }

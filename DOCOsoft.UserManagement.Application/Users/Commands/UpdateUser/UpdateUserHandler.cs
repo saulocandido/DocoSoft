@@ -2,7 +2,7 @@
 using DOCOsoft.UserManagement.Application.Users.Common;
 using DOCOsoft.UserManagement.Application.Users.Dtos;
 using DOCOsoft.UserManagement.Domain.Events;
-using DOCOsoft.UserManagement.Domain.Interfaces;
+using DOCOsoft.UserManagement.Domain.Services;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -12,13 +12,13 @@ namespace DOCOsoft.UserManagement.Application.Users.Commands.UpdateUser
     public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, Result<UserDto>>
     {
         private readonly IUserRepository _userRepo;
-        private readonly IUserUniquenessChecker _uniquenessChecker;
+        private readonly UserDomainService _userDomainService;
         private readonly ILogger<UpdateUserHandler> _logger;
 
-        public UpdateUserHandler(IUserRepository userRepo, IUserUniquenessChecker uniquenessChecker, ILogger<UpdateUserHandler> logger)
+        public UpdateUserHandler(IUserRepository userRepo, UserDomainService userDomainService, ILogger<UpdateUserHandler> logger)
         {
             _userRepo = userRepo;
-            _uniquenessChecker = uniquenessChecker;
+            _userDomainService = userDomainService;
             _logger = logger;
         }
 
@@ -33,29 +33,21 @@ namespace DOCOsoft.UserManagement.Application.Users.Commands.UpdateUser
                 return Result<UserDto>.Failure($"User with ID '{request.Id}' not found.");
             }
 
-            try
-            {
-                user.UpdateUser(
-                    new FullName(request.FirstName, request.LastName),
-                    new Email(request.Email),
-                    _uniquenessChecker
-                );
+            var fullName = new FullName(request.FirstName, request.LastName);
+            var email = new Email(request.Email);
 
-                _logger.LogInformation("Saving updated user data for UserId: {UserId}", request.Id);
-                await _userRepo.UpdateAsync(user);
+            // Delegate validation and update logic to the domain service
+            _userDomainService.UpdateUser(user, fullName, email);
 
-                var updatedDto = new UserDto(user.Id, user.Name.FirstName, user.Name.LastName, user.Email.Value);
+            _logger.LogInformation("Saving updated user data for UserId: {UserId}", request.Id);
+            await _userRepo.UpdateAsync(user);
 
-                user.AddDomainEvent(new UserUpdatedEvent(user.Id, user.Name.FirstName, user.Name.LastName, user.Email.Value));
+            var updatedDto = new UserDto(user.Id, user.Name.FirstName, user.Name.LastName, user.Email.Value);
 
-                _logger.LogInformation("User with ID {UserId} updated successfully.", request.Id);
-                return Result<UserDto>.Success(updatedDto, "User updated successfully");
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning("User update failed: {Message}", ex.Message);
-                return Result<UserDto>.Failure(ex.Message);
-            }
+            user.AddDomainEvent(new UserUpdatedEvent(user.Id, user.Name.FirstName, user.Name.LastName, user.Email.Value));
+
+            _logger.LogInformation("User with ID {UserId} updated successfully.", request.Id);
+            return Result<UserDto>.Success(updatedDto, "User updated successfully");
         }
     }
 }

@@ -1,17 +1,25 @@
 ﻿using DOCOsoft.UserManagement.Domain.Entities;
 using DOCOsoft.UserManagement.Domain.Interfaces;
+using DOCOsoft.UserManagement.Domain.Services;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 using Moq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Xunit;
 
 namespace DOCOsoft.UserManagement.Test.Domain
 {
     public class UserTests
     {
+        private readonly Mock<IUserUniquenessChecker> _mockUniquenessChecker;
+        private readonly UserDomainService _userDomainService;
+
+        public UserTests()
+        {
+            _mockUniquenessChecker = new Mock<IUserUniquenessChecker>();
+            _userDomainService = new UserDomainService(_mockUniquenessChecker.Object);
+        }
+
         [Fact]
         public void CreateUser_ShouldCreateUser_WhenEmailIsUnique()
         {
@@ -19,13 +27,10 @@ namespace DOCOsoft.UserManagement.Test.Domain
             var name = new FullName("John", "Doe");
             var email = new Email("john.doe@example.com");
             var roles = new List<Role> { new Role(Guid.NewGuid(), "Admin"), new Role(Guid.NewGuid(), "User") };
-            var mockUniquenessChecker = new Mock<IUserUniquenessChecker>();
-            mockUniquenessChecker
-                .Setup(x => x.IsUserEmailUnique(It.IsAny<Email>()))
-                .Returns(true);
+            _mockUniquenessChecker.Setup(x => x.IsUserEmailUnique(It.IsAny<Email>())).Returns(true);
 
             // Act
-            var user = User.CreateUser(name, email, mockUniquenessChecker.Object, roles);
+            var user = _userDomainService.CreateUser(name, email, roles);
 
             // Assert
             Assert.Equal(name, user.Name);
@@ -40,14 +45,13 @@ namespace DOCOsoft.UserManagement.Test.Domain
             var name = new FullName("John", "Doe");
             var email = new Email("john.doe@example.com");
             var roles = new List<Role>();
-            var mockUniquenessChecker = new Mock<IUserUniquenessChecker>();
-            mockUniquenessChecker
-                .Setup(x => x.IsUserEmailUnique(It.IsAny<Email>()))
-                .Returns(false);
+            _mockUniquenessChecker.Setup(x => x.IsUserEmailUnique(It.IsAny<Email>())).Returns(false);
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() =>
-                User.CreateUser(name, email, mockUniquenessChecker.Object, roles));
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                _userDomainService.CreateUser(name, email, roles));
+
+            Assert.Equal("Email is already in use.", exception.Message);
         }
 
         [Fact]
@@ -56,11 +60,7 @@ namespace DOCOsoft.UserManagement.Test.Domain
             // Arrange
             var name = new FullName("John", "Doe");
             var email = new Email("john.doe@example.com");
-            var mockUniquenessChecker = new Mock<IUserUniquenessChecker>();
-            mockUniquenessChecker
-                .Setup(x => x.IsUserEmailUnique(It.IsAny<Email>()))
-                .Returns(true);
-            var user = User.CreateUser(name, email, mockUniquenessChecker.Object, new List<Role>());
+            var user = new User(name, email);
             var role = new Role(Guid.NewGuid(), "Admin");
 
             // Act
@@ -78,17 +78,14 @@ namespace DOCOsoft.UserManagement.Test.Domain
             var email = new Email("john.doe@example.com");
             var roleId = Guid.NewGuid();
             var role = new Role(roleId, "Admin");
-            var mockUniquenessChecker = new Mock<IUserUniquenessChecker>();
-            mockUniquenessChecker
-                .Setup(x => x.IsUserEmailUnique(It.IsAny<Email>()))
-                .Returns(true);
-            var user = User.CreateUser(name, email, mockUniquenessChecker.Object, new List<Role> { role });
+            var user = new User(name, email);
+            user.AddRole(role); // Add role once
 
             // Act
-            user.AddRole(role);
+            user.AddRole(role); // Try to add duplicate role
 
             // Assert
-            Assert.Single(user.Roles);
+            Assert.Single(user.Roles); // Should still have only one role
         }
 
         [Fact]
@@ -99,11 +96,8 @@ namespace DOCOsoft.UserManagement.Test.Domain
             var email = new Email("john.doe@example.com");
             var roleId = Guid.NewGuid();
             var role = new Role(roleId, "Admin");
-            var mockUniquenessChecker = new Mock<IUserUniquenessChecker>();
-            mockUniquenessChecker
-                .Setup(x => x.IsUserEmailUnique(It.IsAny<Email>()))
-                .Returns(true);
-            var user = User.CreateUser(name, email, mockUniquenessChecker.Object, new List<Role> { role });
+            var user = new User(name, email);
+            user.AddRole(role);
 
             // Act
             user.RemoveRole(role);
@@ -118,18 +112,53 @@ namespace DOCOsoft.UserManagement.Test.Domain
             // Arrange
             var name = new FullName("John", "Doe");
             var email = new Email("john.doe@example.com");
-            var mockUniquenessChecker = new Mock<IUserUniquenessChecker>();
-            mockUniquenessChecker
-                .Setup(x => x.IsUserEmailUnique(It.IsAny<Email>()))
-                .Returns(true);
-            var user = User.CreateUser(name, email, mockUniquenessChecker.Object, new List<Role>());
+            var user = new User(name, email);
             var role = new Role(Guid.NewGuid(), "Admin");
 
             // Act
-            user.RemoveRole(role);
+            user.RemoveRole(role); // Removing non-existing role
 
             // Assert
-            Assert.Empty(user.Roles);
+            Assert.Empty(user.Roles); // Should remain empty
+        }
+
+        [Fact]
+        public void UpdateUser_ShouldUpdateUser_WhenEmailIsUnique()
+        {
+            // Arrange
+            var name = new FullName("John", "Doe");
+            var email = new Email("john.doe@example.com");
+            var user = new User(name, email);
+            var newName = new FullName("Johnny", "Doe");
+            var newEmail = new Email("johnny.doe@example.com");
+
+            _mockUniquenessChecker.Setup(x => x.IsUserEmailUnique(It.IsAny<Email>())).Returns(true);
+
+            // Act
+            _userDomainService.UpdateUser(user, newName, newEmail);
+
+            // Assert
+            Assert.Equal(newName, user.Name);
+            Assert.Equal(newEmail, user.Email);
+        }
+
+        [Fact]
+        public void UpdateUser_ShouldThrowException_WhenEmailIsNotUnique()
+        {
+            // Arrange
+            var name = new FullName("John", "Doe");
+            var email = new Email("john.doe@example.com");
+            var user = new User(name, email);
+            var newEmail = new Email("existing@example.com");
+            var newName = new FullName("Johnny", "Doe");
+
+            _mockUniquenessChecker.Setup(x => x.IsUserEmailUnique(It.IsAny<Email>())).Returns(false);
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+                _userDomainService.UpdateUser(user, newName, newEmail));
+
+            Assert.Equal("Email is already in use.", exception.Message);
         }
     }
 }
