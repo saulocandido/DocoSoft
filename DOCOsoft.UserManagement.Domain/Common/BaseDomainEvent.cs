@@ -1,4 +1,6 @@
 ﻿
+using DOCOsoft.UserManagement.Domain.Interfaces;
+
 namespace DOCOsoft.UserManagement.Domain.Common
 {
     public abstract class BaseDomainEvent : IDomainEvent

@@ -1,6 +1,5 @@
 ﻿using DOCOsoft.UserManagement.Application.Behaviors;
 using DOCOsoft.UserManagement.Application.Interfaces;
-using DOCOsoft.UserManagement.Domain.Services;
 using DOCOsoft.UserManagement.Infrastructure.Persistence;
 using DOCOsoft.UserManagement.Infrastructure.Services;
 using MediatR;
@@ -9,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using DOCOsoft.UserManagement.Infrastructure.Persistence.UserRepository;
 using DOCOsoft.UserManagement.Infrastructure.Persistence.RoleRepository;
+using DOCOsoft.UserManagement.Domain.Interfaces;
 
 
 namespace DOCOsoft.UserManagement.Infrastructure

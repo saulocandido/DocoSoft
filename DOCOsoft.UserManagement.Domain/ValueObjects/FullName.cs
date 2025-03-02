@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DOCOsoft.UserManagement.Domain.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,15 +15,13 @@ namespace DOCOsoft.UserManagement.Domain.ValueObjects
         public FullName(string firstName, string lastName)
         {
             if (string.IsNullOrWhiteSpace(firstName))
-                throw new ArgumentException("First name cannot be empty.");
+                throw new DomainValidationException("First name cannot be empty.");
             if (string.IsNullOrWhiteSpace(lastName))
-                throw new ArgumentException("Last name cannot be empty.");
+                throw new DomainValidationException("Last name cannot be empty.");
 
             FirstName = firstName;
             LastName = lastName;
         }
-
-        private FullName() { FirstName = null!; LastName = null!; }
 
         public override string ToString() => $"{FirstName} {LastName}";
         public override bool Equals(object? obj)
@@ -31,6 +30,8 @@ namespace DOCOsoft.UserManagement.Domain.ValueObjects
             return FirstName == other.FirstName && LastName == other.LastName;
         }
 
-        public override int GetHashCode() => (FirstName + LastName).GetHashCode();
+        // adding this only for a better look up if need search in a list 
+        public override int GetHashCode() => HashCode.Combine(FirstName, LastName);
+
     }
 }

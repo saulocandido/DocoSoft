@@ -1,4 +1,6 @@
 ﻿
+using DOCOsoft.UserManagement.Domain.Common;
+
 namespace DOCOsoft.UserManagement.Domain.ValueObjects
 {
     public sealed class Email
@@ -8,15 +10,14 @@ namespace DOCOsoft.UserManagement.Domain.ValueObjects
         public Email(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Email cannot be empty.");
+                throw new DomainValidationException("Email cannot be empty.");
 
             if (!value.Contains("@"))
-                throw new ArgumentException("Email must contain '@' symbol.");
+                throw new DomainValidationException("Email must contain '@' symbol.");
 
             Value = value;
         }
 
-        private Email() { Value = null!; }
 
         public override string ToString() => Value;
         public override bool Equals(object? obj)

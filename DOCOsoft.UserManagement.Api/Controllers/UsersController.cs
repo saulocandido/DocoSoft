@@ -16,12 +16,10 @@ namespace DOCOsoft.UserManagement.Api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IMediator mediator, ILogger<UsersController> logger)
+        public UsersController(IMediator mediator)
         {
             _mediator = mediator;
-            _logger = logger;
         }
 
         /// <summary>
@@ -35,19 +33,11 @@ namespace DOCOsoft.UserManagement.Api.Controllers
         [ProducesResponseType(500)]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand command)
         {
-            try
-            {
-                var result = await _mediator.Send(command);
-                if (!result.IsSuccess)
-                    return BadRequest(new { result.Message, result.Errors });
+            var result = await _mediator.Send(command);
+            if (!result.IsSuccess)
+                return BadRequest(new { result.Message, result.Errors });
 
-                return CreatedAtAction(nameof(GetUserById), new { id = result.Data?.Id }, result.Data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error creating user");
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            return CreatedAtAction(nameof(GetUserById), new { id = result.Data?.Id }, result.Data);
         }
 
         /// <summary>
@@ -65,19 +55,11 @@ namespace DOCOsoft.UserManagement.Api.Controllers
             if (id != command.Id)
                 return BadRequest(new { Message = "Mismatched UserId in URL and payload" });
 
-            try
-            {
-                var result = await _mediator.Send(command);
-                if (!result.IsSuccess)
-                    return NotFound(new { result.Message, result.Errors });
+            var result = await _mediator.Send(command);
+            if (!result.IsSuccess)
+                return NotFound(new { result.Message, result.Errors });
 
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating user {UserId}", id);
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            return NoContent();
         }
 
         /// <summary>
@@ -90,19 +72,11 @@ namespace DOCOsoft.UserManagement.Api.Controllers
         [ProducesResponseType(500)]
         public async Task<IActionResult> DeleteUser(Guid id)
         {
-            try
-            {
-                var result = await _mediator.Send(new DeleteUserCommand(id));
-                if (!result.IsSuccess)
-                    return NotFound(new { result.Message, result.Errors });
+            var result = await _mediator.Send(new DeleteUserCommand(id));
+            if (!result.IsSuccess)
+                return NotFound(new { result.Message, result.Errors });
 
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error deleting user {UserId}", id);
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            return NoContent();
         }
 
         /// <summary>
@@ -116,19 +90,11 @@ namespace DOCOsoft.UserManagement.Api.Controllers
         [ProducesResponseType(500)]
         public async Task<ActionResult<Result<UserDto>>> GetUserById(Guid id)
         {
-            try
-            {
-                var result = await _mediator.Send(new GetUserByIdQuery(id));
-                if (!result.IsSuccess)
-                    return NotFound(new { result.Message, result.Errors });
+            var result = await _mediator.Send(new GetUserByIdQuery(id));
+            if (!result.IsSuccess)
+                return NotFound(new { result.Message, result.Errors });
 
-                return Ok(result.Data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching user {UserId}", id);
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            return Ok(result.Data);
         }
 
         /// <summary>
@@ -141,19 +107,11 @@ namespace DOCOsoft.UserManagement.Api.Controllers
         [ProducesResponseType(500)]
         public async Task<IActionResult> GetAllUsers()
         {
-            try
-            {
-                var result = await _mediator.Send(new GetAllUsersQuery());
-                if (!result.IsSuccess)
-                    return BadRequest(new { result.Message, result.Errors });
+            var result = await _mediator.Send(new GetAllUsersQuery());
+            if (!result.IsSuccess)
+                return BadRequest(new { result.Message, result.Errors });
 
-                return Ok(result.Data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching all users");
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            return Ok(result.Data);
         }
 
         /// <summary>
@@ -166,19 +124,11 @@ namespace DOCOsoft.UserManagement.Api.Controllers
         [ProducesResponseType(500)]
         public async Task<IActionResult> GetAllRoles()
         {
-            try
-            {
-                var result = await _mediator.Send(new GetAllRolesQuery());
-                if (!result.IsSuccess)
-                    return NotFound(new { result.Message, result.Errors });
+            var result = await _mediator.Send(new GetAllRolesQuery());
+            if (!result.IsSuccess)
+                return NotFound(new { result.Message, result.Errors });
 
-                return Ok(result.Data);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching roles");
-                return StatusCode(500, "An unexpected error occurred.");
-            }
+            return Ok(result.Data);
         }
     }
 }

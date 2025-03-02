@@ -1,7 +1,7 @@
 ﻿using DOCOsoft.UserManagement.Domain.ValueObjects;
 
 
-namespace DOCOsoft.UserManagement.Domain.Services
+namespace DOCOsoft.UserManagement.Domain.Interfaces
 {
     public interface IUserUniquenessChecker
     {

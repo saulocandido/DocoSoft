@@ -1,4 +1,4 @@
-﻿using DOCOsoft.UserManagement.Domain.Common;
+﻿using DOCOsoft.UserManagement.Domain.Interfaces;
 
 
 namespace DOCOsoft.UserManagement.Application.Interfaces

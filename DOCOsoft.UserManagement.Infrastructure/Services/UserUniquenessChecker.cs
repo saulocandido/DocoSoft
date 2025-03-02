@@ -1,5 +1,5 @@
 ﻿using DOCOsoft.UserManagement.Application.Interfaces;
-using DOCOsoft.UserManagement.Domain.Services;
+using DOCOsoft.UserManagement.Domain.Interfaces;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 
 

@@ -2,7 +2,7 @@
 using DOCOsoft.UserManagement.Application.Users.Common;
 using DOCOsoft.UserManagement.Application.Users.Dtos;
 using DOCOsoft.UserManagement.Domain.Events;
-using DOCOsoft.UserManagement.Domain.Services;
+using DOCOsoft.UserManagement.Domain.Interfaces;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;

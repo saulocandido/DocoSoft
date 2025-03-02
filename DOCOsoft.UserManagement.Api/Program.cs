@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using DOCOsoft.UserManagement.Application.Users.Commands.CreateUser;
 using DOCOsoft.UserManagement.Application.Behaviors;
 using MediatR;
+using DOCOsoft.UserManagement.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +26,6 @@ builder.Services.AddMediatR(cfg =>
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(DomainEventsDispatcherBehavior<,>));
 });
 
-//builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(CreateUserCommand).Assembly));
-
 builder.Services.AddInfrastructure(configuration);
 builder.Services.AddApplicationServices();
 
@@ -35,12 +34,6 @@ builder.Services.AddApplicationServices();
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate(); 
-}
 
 
 if (app.Environment.IsDevelopment())

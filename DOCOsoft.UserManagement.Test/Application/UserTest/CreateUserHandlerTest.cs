@@ -1,6 +1,5 @@
 ﻿
 using DOCOsoft.UserManagement.Application.Users.Commands.CreateUser;
-using DOCOsoft.UserManagement.Domain.Services;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -9,6 +8,7 @@ using Xunit;
 using DomainUser = DOCOsoft.UserManagement.Domain.Entities.User;
 using DomainRole = DOCOsoft.UserManagement.Domain.Entities.Role;
 using DOCOsoft.UserManagement.Application.Interfaces;
+using DOCOsoft.UserManagement.Domain.Interfaces;
 
 namespace DOCOsoft.UserManagement.Test.Application.UserTest
 {

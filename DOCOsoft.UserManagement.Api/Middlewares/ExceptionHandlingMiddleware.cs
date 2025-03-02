@@ -3,8 +3,9 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using DOCOsoft.UserManagement.Application.Users.Commands.UpdateUser;
+using DOCOsoft.UserManagement.Domain.Common;
 
-namespace DOCOsoft.UserManagement.Application.Behaviors
+namespace DOCOsoft.UserManagement.Api.Middlewares
 {
     public class ExceptionHandlingMiddleware
     {
@@ -43,10 +44,11 @@ namespace DOCOsoft.UserManagement.Application.Behaviors
 
             response.StatusCode = exception switch
             {
-                UserNotFoundException => (int)HttpStatusCode.NotFound, 
-                DuplicateEmailException => (int)HttpStatusCode.Conflict, 
-                UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized, 
-                _ => (int)HttpStatusCode.InternalServerError 
+                DomainValidationException => (int)HttpStatusCode.BadRequest,
+                UserNotFoundException => (int)HttpStatusCode.NotFound,
+                DuplicateEmailException => (int)HttpStatusCode.Conflict,
+                UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
+                _ => (int)HttpStatusCode.InternalServerError
             };
 
             var result = JsonSerializer.Serialize(errorResponse);
