@@ -1,13 +1,9 @@
 ﻿using DOCOsoft.UserManagement.Domain.Common;
 using DOCOsoft.UserManagement.Domain.Entities;
-using DOCOsoft.UserManagement.Domain.Interfaces;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 
 public class User : BaseEntity
 {
-    private List<IDomainEvent> _domainEvents = new();
-    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
-
     public FullName Name { get; private set; }
     public Email Email { get; private set; }
     public ICollection<Role> Roles { get; private set; } = new List<Role>();
