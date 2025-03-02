@@ -3,7 +3,6 @@ using DOCOsoft.UserManagement.Application.Users.Dtos;
 using DOCOsoft.UserManagement.Domain.Entities;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 using DOCOsoft.UserManagement.Domain.Interfaces;
-using DOCOsoft.UserManagement.Domain.Services;
 using DOCOsoft.UserManagement.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -14,6 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DOCOsoft.UserManagement.Domain.Common;
+using DOCOsoft.UserManagement.Domain.DomainServices;
 
 namespace DOCOsoft.UserManagement.Test.Application.UserTest
 {

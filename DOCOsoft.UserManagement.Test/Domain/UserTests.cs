@@ -1,6 +1,6 @@
-﻿using DOCOsoft.UserManagement.Domain.Entities;
+﻿using DOCOsoft.UserManagement.Domain.DomainServices;
+using DOCOsoft.UserManagement.Domain.Entities;
 using DOCOsoft.UserManagement.Domain.Interfaces;
-using DOCOsoft.UserManagement.Domain.Services;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 using Moq;
 using System;

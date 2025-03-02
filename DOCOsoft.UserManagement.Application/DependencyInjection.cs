@@ -1,5 +1,5 @@
 ﻿using DOCOsoft.UserManagement.Application.Behaviors;
-using DOCOsoft.UserManagement.Domain.Services;
+using DOCOsoft.UserManagement.Domain.DomainServices;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -2,7 +2,7 @@
 using DOCOsoft.UserManagement.Domain.Interfaces;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 
-namespace DOCOsoft.UserManagement.Domain.Services
+namespace DOCOsoft.UserManagement.Domain.DomainServices
 {
     /// <summary>
     /// a domain service for user domain 
