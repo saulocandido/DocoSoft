@@ -12,7 +12,6 @@ namespace DOCOsoft.UserManagement.Application
         {
             
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(DomainEventsDispatcherBehavior<,>));
             services.AddScoped<UserDomainService>();
 
             return services;

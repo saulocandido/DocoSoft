@@ -18,6 +18,7 @@ namespace DOCOsoft.UserManagement.Infrastructure.Persistence
             builder.UseSqlite(connectionString);
 
             return new AppDbContext(builder.Options);
+
         }
     }
 }

@@ -23,7 +23,6 @@ var configuration = new ConfigurationBuilder()
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(CreateUserCommand).Assembly);
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(DomainEventsDispatcherBehavior<,>));
 });
 
 builder.Services.AddInfrastructure(configuration);

@@ -2,7 +2,6 @@
 using DOCOsoft.UserManagement.Application.Users.Common;
 using DOCOsoft.UserManagement.Application.Users.Dtos;
 using DOCOsoft.UserManagement.Domain.DomainServices;
-using DOCOsoft.UserManagement.Domain.Events;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -43,8 +42,6 @@ namespace DOCOsoft.UserManagement.Application.Users.Commands.UpdateUser
             await _userRepo.UpdateAsync(user);
 
             var updatedDto = new UserDto(user.Id, user.Name.FirstName, user.Name.LastName, user.Email.Value);
-
-            user.AddDomainEvent(new UserUpdatedEvent(user.Id, user.Name.FirstName, user.Name.LastName, user.Email.Value));
 
             _logger.LogInformation("User with ID {UserId} updated successfully.", request.Id);
             return Result<UserDto>.Success(updatedDto, "User updated successfully");

@@ -3,7 +3,6 @@ using DOCOsoft.UserManagement.Application.Users.Commands.CreateUser;
 using DOCOsoft.UserManagement.Application.Users.Common;
 using DOCOsoft.UserManagement.Application.Users.Dtos;
 using DOCOsoft.UserManagement.Domain.DomainServices;
-using DOCOsoft.UserManagement.Domain.Events;
 using DOCOsoft.UserManagement.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -47,8 +46,6 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, Result<UserD
 
         var userDto = new UserDto(user.Id, user.Name.FirstName, user.Name.LastName, user.Email.Value,
             roles.Select(r => new RoleDto(r.Id, r.Name)).ToList());
-
-        user.AddDomainEvent(new UserCreatedEvent(user.Id, user.Email.Value));
 
         _logger.LogInformation("User created successfully with ID: {UserId}", user.Id);
         return Result<UserDto>.Success(userDto, "User created successfully");
